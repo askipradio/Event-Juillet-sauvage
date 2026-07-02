@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juillet Sauvage - Votes | Askipradiotv</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        askip: { dark: '#111111', gold: '#f59e0b' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        bebas: ['"Bebas Neue"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #111111; color: #e5e7eb; margin: 0; }
+        .bebas { font-family: 'Bebas Neue', sans-serif; }
+        .main-wrapper { max-width: 1000px; margin: 0 auto; min-height: 100vh; }
+    </style>
+</head>
+<body class="bg-askip-dark font-sans text-gray-200">
+
+    <div class="main-wrapper">
+        <header class="p-6 flex justify-center border-b border-gray-800">
+            <h1 class="bebas text-5xl text-askip-gold tracking-wider">ASKIP - T'AS DU TALENT !</h1>
+        </header>
+
+        <main class="p-6">
+            <section class="text-center mb-12">
+                <h2 class="bebas text-7xl text-white mb-2">LES CANDIDATS</h2>
+                <p class="text-xl text-askip-gold font-bold">SOUTIENS TON ARTISTE PRÉFÉRÉ</p>
+            </section>
+
+            <section id="votes">
+                <div id="grille-artistes" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal-vote" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50">
+        <div class="bg-gray-900 p-8 rounded-lg border border-gray-700 max-w-md w-full relative">
+            <button onclick="fermerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">X</button>
+            <h4 class="bebas text-3xl text-askip-gold mb-4">Valider ton vote</h4>
+            <p class="text-sm mb-4 text-gray-400">Un seul vote par jour et par adresse email est autorisé.</p>
+            <input type="email" id="email_vote" placeholder="Ton adresse email" class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white mb-4">
+            <input type="hidden" id="artiste_id_en_cours">
+            <button onclick="soumettreVote()" class="w-full bg-askip-gold text-black font-bold bebas text-xl py-3 rounded">Voter</button>
+            <p id="msg-vote" class="mt-2 text-center text-sm hidden"></p>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'TON_URL_SUPABASE';
+        const supabaseKey = 'TA_CLE_PUBLIQUE_SUPABASE';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function chargerArtistes() {
+            const { data: artistes, error } = await supabase.from('artistes').select('*');
+            if (error) return console.error(error);
+
+            const grille = document.getElementById('grille-artistes');
+            grille.innerHTML = '';
+
+            artistes.forEach(artiste => {
+                const card = document.createElement('div');
+                card.className = 'bg-gray-800 p-4 rounded border border-gray-700 flex flex-col items-center';
+                
+                const imageHtml = artiste.image_path 
+                    ? `<img src="${supabaseUrl}/storage/v1/object/public/images/${artiste.image_path}" class="w-full aspect-square object-cover mb-4 rounded">`
+                    : `<div class="w-full aspect-square bg-gray-900 flex items-center justify-center text-5xl text-gray-700 font-bold mb-4 rounded">?</div>`;
+
+                card.innerHTML = `
+                    ${imageHtml}
+                    <h4 class="text-xl font-bold mb-2">${artiste.nom}</h4>
+                    <button onclick="ouvrirModal(${artiste.id})" class="mt-auto bg-white text-black font-bold py-2 px-4 rounded w-full hover:bg-gray-200">
+                        Voter
+                    </button>
+                `;
+                grille.appendChild(card);
+            });
+        }
+
+        function ouvrirModal(artisteId) {
+            const dernierVote = localStorage.getItem('dernier_vote');
+            if (dernierVote && (Date.now() - dernierVote) < 86400000) {
+                alert("Tu as déjà voté dans les dernières 24h. Reviens demain !");
+                return;
+            }
+            document.getElementById('artiste_id_en_cours').value = artisteId;
+            document.getElementById('modal-vote').classList.remove('hidden');
+        }
+
+        function fermerModal() {
+            document.getElementById('modal-vote').classList.add('hidden');
+            document.getElementById('msg-vote').classList.add('hidden');
+            document.getElementById('msg-vote').innerText = '';
+        }
+
+        async function soumettreVote() {
+            const email = document.getElementById('email_vote').value;
+            const artisteId = document.getElementById('artiste_id_en_cours').value;
+            const msg = document.getElementById('msg-vote');
+
+            if (!email) {
+                msg.innerText = "Email obligatoire.";
+                msg.className = "mt-2 text-center text-sm text-red-500 block";
+                return;
+            }
+
+            try {
+                const { error } = await supabase.from('votes').insert([{ email, artiste_id: artisteId }]);
+                if (error) throw error;
+
+                localStorage.setItem('dernier_vote', Date.now());
+                
+                msg.innerText = "Vote enregistré !";
+                msg.className = "mt-2 text-center text-sm text-green-500 block";
+                setTimeout(fermerModal, 1500);
+            } catch (err) {
+                msg.innerText = "Erreur ou email déjà utilisé aujourd'hui.";
+                msg.className = "mt-2 text-center text-sm text-red-500 block";
+            }
+        }
+
+        chargerArtistes();
+    </script>
+</body>
+</html>

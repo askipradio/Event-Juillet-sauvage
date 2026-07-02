@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juillet Sauvage - Candidature | Askipradiotv</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        askip: { dark: '#111111', gold: '#f59e0b' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        bebas: ['"Bebas Neue"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #111111; color: #e5e7eb; margin: 0; }
+        .bebas { font-family: 'Bebas Neue', sans-serif; }
+        .main-wrapper { max-width: 1000px; margin: 0 auto; min-height: 100vh; }
+    </style>
+</head>
+<body class="bg-askip-dark font-sans text-gray-200">
+
+    <div class="main-wrapper">
+        <header class="p-6 flex justify-center border-b border-gray-800">
+            <h1 class="bebas text-5xl text-askip-gold tracking-wider">ASKIP - T'AS DU TALENT !</h1>
+        </header>
+
+        <main class="p-6">
+            <section class="text-center mb-12">
+                <h2 class="bebas text-7xl text-white mb-2">JUILLET SAUVAGE 2026</h2>
+                <p class="text-xl text-askip-gold font-bold">1M AUDITEURS IMPACTÉS</p>
+                <p class="text-gray-400 mt-4">Envoie ton morceau pour participer.</p>
+            </section>
+
+            <section id="inscription" class="bg-black p-8 rounded-lg border-2 border-askip-gold">
+                <h3 class="bebas text-4xl text-white mb-6">Rejoins le Top 31</h3>
+                <form id="form-candidature" class="space-y-4">
+                    <div>
+                        <label class="block font-bold mb-1">Nom d'artiste *</label>
+                        <input type="text" id="nom_artiste" required class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Email *</label>
+                        <input type="email" id="email_contact" required class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Photo (Optionnel)</label>
+                        <input type="file" id="image_file" accept="image/*" class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Fichier Audio (MP3/WAV) *</label>
+                        <input type="file" id="audio_file" accept="audio/*" required class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white">
+                    </div>
+                    <button type="submit" id="btn-submit" class="w-full bg-askip-gold text-black font-bold bebas text-2xl py-3 rounded hover:bg-yellow-400 transition">
+                        Envoyer ma candidature
+                    </button>
+                    <p id="msg-form" class="mt-2 text-center text-sm hidden"></p>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const supabaseUrl = 'TON_URL_SUPABASE';
+        const supabaseKey = 'TA_CLE_PUBLIQUE_SUPABASE';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        document.getElementById('form-candidature').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            const msg = document.getElementById('msg-form');
+            btn.disabled = true;
+            btn.innerText = 'Envoi en cours...';
+
+            const nom = document.getElementById('nom_artiste').value;
+            const email = document.getElementById('email_contact').value;
+            const audioFile = document.getElementById('audio_file').files[0];
+            const imageFile = document.getElementById('image_file').files[0];
+
+            try {
+                const audioPath = `candidats/${Date.now()}_${audioFile.name}`;
+                const { error: audioError } = await supabase.storage.from('audios').upload(audioPath, audioFile);
+                if (audioError) throw audioError;
+
+                let imagePath = null;
+                if (imageFile) {
+                    imagePath = `photos/${Date.now()}_${imageFile.name}`;
+                    const { error: imageError } = await supabase.storage.from('images').upload(imagePath, imageFile);
+                    if (imageError) throw imageError;
+                }
+
+                const { error: dbError } = await supabase.from('artistes').insert([{ 
+                    nom, 
+                    email, 
+                    audio_path: audioPath,
+                    image_path: imagePath 
+                }]);
+                if (dbError) throw dbError;
+
+                msg.innerText = "Candidature validée !";
+                msg.className = "mt-2 text-center text-sm text-green-500 block";
+                document.getElementById('form-candidature').reset();
+            } catch (err) {
+                msg.innerText = "Erreur : " + err.message;
+                msg.className = "mt-2 text-center text-sm text-red-500 block";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Envoyer ma candidature';
+            }
+        });
+    </script>
+</body>
+</html>
