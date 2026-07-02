@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,112 +16,159 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        askip: { dark: '#111111', gold: '#f59e0b' }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        bebas: ['"Bebas Neue"', 'sans-serif'],
-                    }
+                    colors: { askip: { dark: '#0a0a0a', gold: '#f59e0b' } },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], bebas: ['"Bebas Neue"', 'sans-serif'] }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #111111; color: #e5e7eb; margin: 0; }
-        .bebas { font-family: 'Bebas Neue', sans-serif; }
-        .main-wrapper { max-width: 1000px; margin: 0 auto; min-height: 100vh; }
+        body { background-color: #0a0a0a; color: #e5e7eb; }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .input-glass { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); color: white; }
+        .input-glass:focus { border-color: #f59e0b; outline: none; }
     </style>
 </head>
-<body class="bg-askip-dark font-sans text-gray-200">
+<body class="font-sans antialiased min-h-screen flex flex-col">
 
-    <div class="main-wrapper">
-        <header class="p-6 flex justify-center border-b border-gray-800">
-            <h1 class="bebas text-5xl text-askip-gold tracking-wider">ASKIP - T'AS DU TALENT !</h1>
-        </header>
+    <!-- Navbar -->
+    <nav class="w-full p-6 flex justify-between items-center absolute top-0 z-50">
+        <div class="text-2xl font-bold tracking-widest text-white">ASKIPRADIO<span class="text-askip-gold">TV</span></div>
+        <div class="hidden md:flex gap-6 text-sm font-semibold uppercase tracking-wider text-gray-300">
+            <a href="https://askipradiotv.com/" class="hover:text-askip-gold transition">Accueil</a>
+            <a href="vote.html" class="hover:text-askip-gold transition">Voir les votes</a>
+        </div>
+    </nav>
 
-        <main class="p-6">
-            <section class="text-center mb-12">
-                <h2 class="bebas text-7xl text-white mb-2">JUILLET SAUVAGE 2026</h2>
-                <p class="text-xl text-askip-gold font-bold">1M AUDITEURS IMPACTÉS</p>
-                <p class="text-gray-400 mt-4">Envoie ton morceau pour participer.</p>
-            </section>
+    <!-- Main Content -->
+    <main class="flex-grow relative pt-24 pb-12 flex items-center bg-[url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-blend-overlay bg-black/80">
+        <div class="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            <!-- Gauche : Pitch & Stats -->
+            <div class="space-y-8">
+                <div>
+                    <h2 class="text-askip-gold tracking-widest uppercase text-sm font-bold mb-2">Juillet Sauvage 2026</h2>
+                    <h1 class="bebas text-6xl md:text-8xl leading-none text-white mb-6">Fais entendre<br>ta musique.</h1>
+                    <p class="text-gray-300 text-lg md:text-xl max-w-md font-light leading-relaxed">
+                        Rejoins le Top 31 d'Askip Radio. Envoie ton meilleur titre, soumets-le au vote du public et gagne ta place dans notre playlist séquentielle exclusive.
+                    </p>
+                </div>
 
-            <section id="inscription" class="bg-black p-8 rounded-lg border-2 border-askip-gold">
-                <h3 class="bebas text-4xl text-white mb-6">Rejoins le Top 31</h3>
-                <form id="form-candidature" class="space-y-4">
+                <div class="flex gap-8 pt-6 border-t border-white/10">
                     <div>
-                        <label class="block font-bold mb-1">Nom d'artiste *</label>
-                        <input type="text" id="nom_artiste" required class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white">
+                        <p class="text-gray-400 text-sm uppercase tracking-wider mb-1">Artistes</p>
+                        <p class="bebas text-5xl text-white">31</p>
                     </div>
                     <div>
-                        <label class="block font-bold mb-1">Email *</label>
-                        <input type="email" id="email_contact" required class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white">
+                        <p class="text-gray-400 text-sm uppercase tracking-wider mb-1">Passages</p>
+                        <p class="bebas text-5xl text-white">248</p>
                     </div>
                     <div>
-                        <label class="block font-bold mb-1">Photo (Optionnel)</label>
-                        <input type="file" id="image_file" accept="image/*" class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white">
+                        <p class="text-gray-400 text-sm uppercase tracking-wider mb-1">Auditeurs</p>
+                        <p class="bebas text-5xl text-askip-gold">1M+</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Droite : Formulaire -->
+            <div class="glass-panel p-8 md:p-10 rounded-2xl shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-askip-gold rounded-full mix-blend-multiply filter blur-3xl opacity-20 -mr-10 -mt-10"></div>
+                
+                <h3 class="text-2xl font-bold text-white mb-6">Dépose ta candidature</h3>
+                
+                <form id="form-candidature" class="space-y-4 relative z-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="nom_artiste" placeholder="Nom d'artiste *" required class="input-glass w-full p-3 rounded-lg text-sm">
+                        <input type="email" id="email_contact" placeholder="Email *" required class="input-glass w-full p-3 rounded-lg text-sm">
+                    </div>
+                    
+                    <input type="text" id="titre_son" placeholder="Titre du morceau *" required class="input-glass w-full p-3 rounded-lg text-sm">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Photo de l'artiste</label>
+                            <input type="file" id="image_file" accept="image/*" class="input-glass w-full p-2 rounded-lg text-sm file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-askip-gold file:text-black">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Cover du morceau</label>
+                            <input type="file" id="cover_file" accept="image/*" class="input-glass w-full p-2 rounded-lg text-sm file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-askip-gold file:text-black">
+                        </div>
+                    </div>
+                    
                     <div>
-                        <label class="block font-bold mb-1">Fichier Audio (MP3/WAV) *</label>
-                        <input type="file" id="audio_file" accept="audio/*" required class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white">
+                        <label class="block text-xs text-askip-gold mb-1 font-bold">Fichier Audio (MP3/WAV) *</label>
+                        <input type="file" id="audio_file" accept="audio/*" required class="input-glass w-full p-2 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-askip-gold file:text-black">
                     </div>
-                    <button type="submit" id="btn-submit" class="w-full bg-askip-gold text-black font-bold bebas text-2xl py-3 rounded hover:bg-yellow-400 transition">
-                        Envoyer ma candidature
+
+                    <div class="pt-2 border-t border-white/10">
+                        <p class="text-xs text-gray-400 mb-2">Réseaux sociaux (Optionnel)</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="text" id="tiktok" placeholder="TikTok" class="input-glass w-full p-2 rounded-lg text-xs">
+                            <input type="text" id="insta" placeholder="Instagram" class="input-glass w-full p-2 rounded-lg text-xs">
+                            <input type="text" id="youtube" placeholder="YouTube" class="input-glass w-full p-2 rounded-lg text-xs">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-submit" class="w-full bg-askip-gold text-black font-bold text-lg py-3 rounded-lg mt-4 hover:bg-yellow-400 transition-all transform hover:scale-[1.02]">
+                        Rejoindre l'aventure
                     </button>
-                    <p id="msg-form" class="mt-2 text-center text-sm hidden"></p>
+                    <p id="msg-form" class="text-center text-sm hidden mt-2"></p>
                 </form>
-            </section>
-        </main>
-    </div>
+            </div>
+
+        </div>
+    </main>
 
     <script>
-        const supabaseUrl = 'TON_URL_SUPABASE';
-        const supabaseKey = 'TA_CLE_PUBLIQUE_SUPABASE';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseUrl = 'https://lkzhmvqfgjlrqpwrfbkt.supabase.co';
+        const supabaseKey = 'sb_publishable_PxgI160bvtu1IVMOrIATvQ_mLR3W120';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         document.getElementById('form-candidature').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
             const msg = document.getElementById('msg-form');
-            btn.disabled = true;
-            btn.innerText = 'Envoi en cours...';
-
-            const nom = document.getElementById('nom_artiste').value;
-            const email = document.getElementById('email_contact').value;
-            const audioFile = document.getElementById('audio_file').files[0];
-            const imageFile = document.getElementById('image_file').files[0];
+            btn.disabled = true; btn.innerText = 'Envoi en cours...';
 
             try {
-                const audioPath = `candidats/${Date.now()}_${audioFile.name}`;
-                const { error: audioError } = await supabase.storage.from('audios').upload(audioPath, audioFile);
-                if (audioError) throw audioError;
+                const nom = document.getElementById('nom_artiste').value;
+                const email = document.getElementById('email_contact').value;
+                const titre_son = document.getElementById('titre_son').value;
+                const tiktok = document.getElementById('tiktok').value;
+                const insta = document.getElementById('insta').value;
+                const youtube = document.getElementById('youtube').value;
 
-                let imagePath = null;
+                const audioFile = document.getElementById('audio_file').files[0];
+                const imageFile = document.getElementById('image_file').files[0];
+                const coverFile = document.getElementById('cover_file').files[0];
+
+                const audioPath = `candidats/${Date.now()}_${audioFile.name}`;
+                await supabaseClient.storage.from('audios').upload(audioPath, audioFile);
+
+                let imagePath = null, coverPath = null;
                 if (imageFile) {
                     imagePath = `photos/${Date.now()}_${imageFile.name}`;
-                    const { error: imageError } = await supabase.storage.from('images').upload(imagePath, imageFile);
-                    if (imageError) throw imageError;
+                    await supabaseClient.storage.from('images').upload(imagePath, imageFile);
+                }
+                if (coverFile) {
+                    coverPath = `photos/${Date.now()}_${coverFile.name}`;
+                    await supabaseClient.storage.from('images').upload(coverPath, coverFile);
                 }
 
-                const { error: dbError } = await supabase.from('artistes').insert([{ 
-                    nom, 
-                    email, 
-                    audio_path: audioPath,
-                    image_path: imagePath 
+                await supabaseClient.from('artistes').insert([{ 
+                    nom, email, titre_son, audio_path: audioPath, 
+                    image_path: imagePath, cover_son_path: coverPath,
+                    tiktok, insta, youtube
                 }]);
-                if (dbError) throw dbError;
 
-                msg.innerText = "Candidature validée !";
-                msg.className = "mt-2 text-center text-sm text-green-500 block";
+                msg.innerText = "Candidature envoyée avec succès !";
+                msg.className = "text-green-400 block mt-2 text-center font-semibold";
                 document.getElementById('form-candidature').reset();
             } catch (err) {
                 msg.innerText = "Erreur : " + err.message;
-                msg.className = "mt-2 text-center text-sm text-red-500 block";
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'Envoyer ma candidature';
+                msg.className = "text-red-400 block mt-2 text-center font-semibold";
             }
+            btn.disabled = false; btn.innerText = "Rejoindre l'aventure";
         });
     </script>
 </body>

@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,90 +16,110 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        askip: { dark: '#111111', gold: '#f59e0b' }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        bebas: ['"Bebas Neue"', 'sans-serif'],
-                    }
+                    colors: { askip: { dark: '#0a0a0a', gold: '#f59e0b' } },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], bebas: ['"Bebas Neue"', 'sans-serif'] }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #111111; color: #e5e7eb; margin: 0; }
-        .bebas { font-family: 'Bebas Neue', sans-serif; }
-        .main-wrapper { max-width: 1000px; margin: 0 auto; min-height: 100vh; }
+        body { background-color: #0a0a0a; color: #e5e7eb; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .input-glass { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); color: white; }
+        .input-glass:focus { border-color: #f59e0b; outline: none; }
     </style>
 </head>
-<body class="bg-askip-dark font-sans text-gray-200">
+<body class="font-sans antialiased min-h-screen flex flex-col bg-[url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-fixed bg-center bg-no-repeat bg-blend-overlay bg-black/90">
 
-    <div class="main-wrapper">
-        <header class="p-6 flex justify-center border-b border-gray-800">
-            <h1 class="bebas text-5xl text-askip-gold tracking-wider">ASKIP - T'AS DU TALENT !</h1>
-        </header>
+    <!-- Navbar -->
+    <nav class="w-full p-6 flex justify-between items-center z-50">
+        <div class="text-2xl font-bold tracking-widest text-white">ASKIPRADIO<span class="text-askip-gold">TV</span></div>
+        <div class="hidden md:flex gap-6 text-sm font-semibold uppercase tracking-wider text-gray-300">
+            <a href="index.html" class="hover:text-askip-gold transition">Inscription</a>
+        </div>
+    </nav>
 
-        <main class="p-6">
-            <section class="text-center mb-12">
-                <h2 class="bebas text-7xl text-white mb-2">LES CANDIDATS</h2>
-                <p class="text-xl text-askip-gold font-bold">SOUTIENS TON ARTISTE PRÉFÉRÉ</p>
-            </section>
+    <main class="flex-grow container mx-auto px-6 py-12">
+        <!-- En-tête de page -->
+        <div class="text-center mb-16">
+            <h2 class="text-askip-gold tracking-widest uppercase text-sm font-bold mb-2">Juillet Sauvage 2026</h2>
+            <h1 class="bebas text-6xl md:text-8xl text-white mb-4">Soutiens ton artiste</h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">Écoute les morceaux et donne de la force. Un vote par jour par personne.</p>
+        </div>
 
-            <section id="votes">
-                <div id="grille-artistes" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    </div>
-            </section>
-        </main>
-    </div>
+        <!-- Grille des candidats -->
+        <div id="grille-artistes" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <!-- Rempli en JS -->
+        </div>
+    </main>
 
-    <div id="modal-vote" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50">
-        <div class="bg-gray-900 p-8 rounded-lg border border-gray-700 max-w-md w-full relative">
-            <button onclick="fermerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">X</button>
-            <h4 class="bebas text-3xl text-askip-gold mb-4">Valider ton vote</h4>
-            <p class="text-sm mb-4 text-gray-400">Un seul vote par jour et par adresse email est autorisé.</p>
-            <input type="email" id="email_vote" placeholder="Ton adresse email" class="w-full bg-gray-800 border border-gray-700 rounded p-3 text-white mb-4">
+    <!-- POPUP VOTE -->
+    <div id="modal-vote" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-50 backdrop-blur-sm">
+        <div class="glass-card p-8 rounded-2xl max-w-md w-full mx-4 relative border-askip-gold/30 border-t-2">
+            <button onclick="fermerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">&times;</button>
+            <h4 class="bebas text-4xl text-white mb-2">Valider ton vote</h4>
+            <p class="text-sm mb-6 text-gray-400">Renseigne ton email. 1 vote/jour max.</p>
+            
+            <input type="email" id="email_vote" placeholder="Adresse email" class="input-glass w-full p-3 rounded-lg text-sm mb-4">
+            
+            <div class="flex items-start mb-6">
+                <input type="checkbox" id="consent_pub" class="mt-1 mr-3 cursor-pointer accent-askip-gold">
+                <label for="consent_pub" class="text-xs text-gray-400 cursor-pointer leading-tight">
+                    J'accepte de recevoir des offres commerciales et des actualités de la part d'Askip.
+                </label>
+            </div>
+
             <input type="hidden" id="artiste_id_en_cours">
-            <button onclick="soumettreVote()" class="w-full bg-askip-gold text-black font-bold bebas text-xl py-3 rounded">Voter</button>
-            <p id="msg-vote" class="mt-2 text-center text-sm hidden"></p>
+            <button onclick="soumettreVote()" class="w-full bg-white text-black font-bold text-lg py-3 rounded-lg hover:bg-askip-gold transition-colors">Confirmer le vote</button>
+            <p id="msg-vote" class="mt-4 text-center text-sm hidden"></p>
         </div>
     </div>
 
     <script>
-        const supabaseUrl = 'TON_URL_SUPABASE';
-        const supabaseKey = 'TA_CLE_PUBLIQUE_SUPABASE';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseUrl = 'https://lkzhmvqfgjlrqpwrfbkt.supabase.co';
+        const supabaseKey = 'sb_publishable_PxgI160bvtu1IVMOrIATvQ_mLR3W120';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         async function chargerArtistes() {
-            const { data: artistes, error } = await supabase.from('artistes').select('*');
+            const { data: artistes, error } = await supabaseClient.from('artistes').select('*, votes(count)');
             if (error) return console.error(error);
 
             const grille = document.getElementById('grille-artistes');
             grille.innerHTML = '';
 
             artistes.forEach(artiste => {
-                const card = document.createElement('div');
-                card.className = 'bg-gray-800 p-4 rounded border border-gray-700 flex flex-col items-center';
+                const nbVotes = artiste.votes[0]?.count || 0;
                 
-                const imageHtml = artiste.image_path 
-                    ? `<img src="${supabaseUrl}/storage/v1/object/public/images/${artiste.image_path}" class="w-full aspect-square object-cover mb-4 rounded">`
-                    : `<div class="w-full aspect-square bg-gray-900 flex items-center justify-center text-5xl text-gray-700 font-bold mb-4 rounded">?</div>`;
+                // On utilise la photo de profil, ou le cover, ou un placeholder stylé
+                const imgSource = artiste.image_path ? artiste.image_path : (artiste.cover_son_path ? artiste.cover_son_path : null);
+                const imageHtml = imgSource 
+                    ? `<img src="${supabaseUrl}/storage/v1/object/public/images/${imgSource}" class="w-full h-48 object-cover rounded-t-xl opacity-90 group-hover:opacity-100 transition duration-300">`
+                    : `<div class="w-full h-48 bg-gray-900 flex items-center justify-center text-6xl text-gray-800 font-bold rounded-t-xl bebas">?</div>`;
 
-                card.innerHTML = `
-                    ${imageHtml}
-                    <h4 class="text-xl font-bold mb-2">${artiste.nom}</h4>
-                    <button onclick="ouvrirModal(${artiste.id})" class="mt-auto bg-white text-black font-bold py-2 px-4 rounded w-full hover:bg-gray-200">
-                        Voter
-                    </button>
+                grille.innerHTML += `
+                    <div class="glass-card rounded-xl flex flex-col group hover:-translate-y-1 transition duration-300 shadow-xl">
+                        ${imageHtml}
+                        <div class="p-5 flex flex-col flex-grow">
+                            <h4 class="text-xl font-bold text-white mb-1 truncate">${artiste.nom}</h4>
+                            <p class="text-sm text-gray-400 mb-4 truncate">${artiste.titre_son || 'Titre inconnu'}</p>
+                            
+                            <div class="flex justify-between items-center mt-auto pt-4 border-t border-white/10">
+                                <span class="bebas text-2xl text-askip-gold">${nbVotes} <span class="text-sm text-gray-500 tracking-widest">VOTES</span></span>
+                                <button onclick="ouvrirModal(${artiste.id})" class="px-4 py-2 bg-white/10 hover:bg-askip-gold hover:text-black text-white text-sm font-bold rounded-lg transition-colors">
+                                    Voter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 `;
-                grille.appendChild(card);
             });
         }
 
         function ouvrirModal(artisteId) {
-            const dernierVote = localStorage.getItem('dernier_vote');
+            // Vérifie le vote spécifique à cet artiste
+            const dernierVote = localStorage.getItem(`dernier_vote_${artisteId}`);
             if (dernierVote && (Date.now() - dernierVote) < 86400000) {
-                alert("Tu as déjà voté dans les dernières 24h. Reviens demain !");
+                alert("Tu as déjà voté pour cet artiste aujourd'hui. Reviens demain !");
                 return;
             }
             document.getElementById('artiste_id_en_cours').value = artisteId;
@@ -115,26 +135,37 @@
         async function soumettreVote() {
             const email = document.getElementById('email_vote').value;
             const artisteId = document.getElementById('artiste_id_en_cours').value;
+            const consent = document.getElementById('consent_pub').checked;
             const msg = document.getElementById('msg-vote');
 
             if (!email) {
                 msg.innerText = "Email obligatoire.";
-                msg.className = "mt-2 text-center text-sm text-red-500 block";
+                msg.className = "mt-2 text-center text-sm text-red-400 block";
+                return;
+            }
+            if (!consent) {
+                msg.innerText = "Tu dois accepter de recevoir nos offres.";
+                msg.className = "mt-2 text-center text-sm text-red-400 block";
                 return;
             }
 
             try {
-                const { error } = await supabase.from('votes').insert([{ email, artiste_id: artisteId }]);
+                const { error } = await supabaseClient.from('votes').insert([{ email, artiste_id: artisteId }]);
                 if (error) throw error;
 
-                localStorage.setItem('dernier_vote', Date.now());
+                // Enregistre le vote pour cet artiste précis
+                localStorage.setItem(`dernier_vote_${artisteId}`, Date.now());
                 
                 msg.innerText = "Vote enregistré !";
-                msg.className = "mt-2 text-center text-sm text-green-500 block";
-                setTimeout(fermerModal, 1500);
+                msg.className = "mt-2 text-center text-sm text-green-400 block";
+                
+                setTimeout(() => {
+                    fermerModal();
+                    chargerArtistes();
+                }, 1500);
             } catch (err) {
-                msg.innerText = "Erreur ou email déjà utilisé aujourd'hui.";
-                msg.className = "mt-2 text-center text-sm text-red-500 block";
+                msg.innerText = "Erreur ou tu as déjà voté pour lui aujourd'hui.";
+                msg.className = "mt-2 text-center text-sm text-red-400 block";
             }
         }
 
