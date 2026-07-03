@@ -56,20 +56,29 @@
         const supabaseKey = 'sb_publishable_PxgI160bvtu1IVMOrIATvQ_mLR3W120';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Vérifie si on est déjà connecté au chargement
-        document.addEventListener('DOMContentLoaded', () => {
-            if (sessionStorage.getItem('admin_connecte') === 'oui') {
+        // Vérifie si on est déjà connecté via Supabase
+        async function verifierSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
                 afficherInterface();
             }
-        });
+        }
+        verifierSession();
 
-        function verifierMotDePasse() {
+        // Vraie connexion Supabase
+        async function verifierMotDePasse() {
+            const email = "digital@askipradiotv.com"; // Mets l'email que tu as créé dans Supabase
             const mdp = document.getElementById('admin-pass').value;
-            if (mdp === 'Askip2026') {
-                sessionStorage.setItem('admin_connecte', 'oui');
-                afficherInterface();
-            } else {
+
+            const { error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: mdp
+            });
+
+            if (error) {
                 document.getElementById('login-erreur').classList.remove('hidden');
+            } else {
+                afficherInterface();
             }
         }
 
@@ -79,8 +88,8 @@
             chargerAdmin();
         }
 
-        function deconnexion() {
-            sessionStorage.removeItem('admin_connecte');
+        async function deconnexion() {
+            await supabaseClient.auth.signOut();
             document.getElementById('admin-pass').value = '';
             document.getElementById('admin-panel').classList.add('hidden');
             document.getElementById('login-screen').classList.remove('hidden');
@@ -90,13 +99,11 @@
             if (e.key === 'Enter') verifierMotDePasse();
         });
 
-        async function chargerAdmin() {
-            const { data, error } = await supabaseClient
-                .from('artistes')
-                .select('*, votes(count)')
-                .order('created_at', { ascending: false });
+        // Le reste du code (chargerAdmin, envoyerAzuracast, supprimer) ne change pas !
 
-            if (error) return alert('Erreur lors du chargement des données.');
+        async function chargerAdmin() {
+            const { data, error } = await supabaseClient.from('artistes').select('*, votes(count)').order('created_at', { ascending: false });
+            if (error) return alert('Erreur de chargement.');
 
             const tbody = document.getElementById('admin-list');
             tbody.innerHTML = '';
@@ -106,13 +113,15 @@
                 const photoUrl = art.image_path ? `${supabaseUrl}/storage/v1/object/public/images/${art.image_path}` : '';
                 const coverUrl = art.cover_son_path ? `${supabaseUrl}/storage/v1/object/public/images/${art.cover_son_path}` : '';
                 const nbVotes = art.votes[0]?.count || 0;
+                const nomSafe = art.nom.replace(/'/g, "\\'");
+                const titreSafe = (art.titre_son || 'Inconnu').replace(/'/g, "\\'");
 
                 tbody.innerHTML += `
                     <tr class="border-b border-gray-700 hover:bg-gray-700">
                         <td class="p-3 font-bold">${art.nom}</td>
                         <td class="p-3 flex gap-2">
-                            ${photoUrl ? `<img src="${photoUrl}" class="w-12 h-12 object-cover rounded" title="Photo Artiste">` : '<div class="w-12 h-12 bg-gray-900 rounded text-xs flex items-center justify-center">Pas de photo</div>'}
-                            ${coverUrl ? `<img src="${coverUrl}" class="w-12 h-12 object-cover rounded" title="Cover Morceau">` : '<div class="w-12 h-12 bg-gray-900 rounded text-xs flex items-center justify-center">Pas de cover</div>'}
+                            ${photoUrl ? `<img src="${photoUrl}" class="w-12 h-12 object-cover rounded">` : '<div class="w-12 h-12 bg-gray-900 rounded text-xs flex items-center justify-center">N/A</div>'}
+                            ${coverUrl ? `<img src="${coverUrl}" class="w-12 h-12 object-cover rounded">` : '<div class="w-12 h-12 bg-gray-900 rounded text-xs flex items-center justify-center">N/A</div>'}
                         </td>
                         <td class="p-3">
                             <span class="font-bold text-yellow-400">${art.titre_son || 'Inconnu'}</span><br>
@@ -124,11 +133,9 @@
                             ${art.insta ? `<a href="${art.insta}" target="_blank" class="text-purple-400 hover:underline">Insta</a> | ` : ''}
                             ${art.youtube ? `<a href="${art.youtube}" target="_blank" class="text-red-400 hover:underline">YouTube</a>` : ''}
                         </td>
-                        <td class="p-3 text-center font-bold text-lg text-green-400">
-                            ${nbVotes}
-                        </td>
+                        <td class="p-3 text-center font-bold text-lg text-green-400">${nbVotes}</td>
                         <td class="p-3 text-center space-y-2">
-                            <button onclick="envoyerAzuracast('${art.nom}', '${art.titre_son}', '${audioUrl}')" class="block w-full bg-blue-600 px-3 py-1 rounded hover:bg-blue-500">Azuracast</button>
+                            <button onclick="envoyerAzuracast('${nomSafe}', '${titreSafe}', '${audioUrl}')" class="block w-full bg-blue-600 px-3 py-1 rounded hover:bg-blue-500">Azuracast</button>
                             <button onclick="supprimer(${art.id})" class="block w-full bg-red-600 px-3 py-1 rounded hover:bg-red-500">Supprimer</button>
                         </td>
                     </tr>
@@ -138,21 +145,56 @@
 
         async function supprimer(id) {
             if (!confirm('Attention, cela supprimera l\'artiste et tous ses votes. Confirmer ?')) return;
-
             try {
-                // 1. Suppression en base
                 const { error } = await supabaseClient.from('artistes').delete().eq('id', id);
                 if (error) throw error;
-
-                // 2. Mise à jour de l'affichage
                 await chargerAdmin();
             } catch (err) {
                 alert("Erreur lors de la suppression : " + err.message);
             }
         }
 
-        function envoyerAzuracast(artiste, titre, url) {
-            alert(`Simulation : Envoi à Azuracast de "${titre}" par ${artiste}\nURL: ${url}`);
+        async function envoyerAzuracast(artiste, titre, audioUrl) {
+            const apiKey = 'e74b011e8a5aae41:0e255bf4df0cb643eed429b421dbf1ad';
+            const playlistId = 25;
+
+            alert(`Envoi en cours pour ${artiste}... Patiente un instant.`);
+
+            try {
+                const response = await fetch(audioUrl);
+                const blob = await response.blob();
+                const nomPropre = `${artiste.replace(/[^a-z0-9]/gi, '_')}_-${titre.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+                const file = new File([blob], nomPropre, { type: 'audio/mpeg' });
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const reqUpload = await fetch('https://radio.askipradiotv.com/api/station/1/files', {
+                    method: 'POST',
+                    headers: { 'X-API-Key': apiKey },
+                    body: formData
+                });
+
+                if (!reqUpload.ok) throw new Error("Échec de l'upload vers AzuraCast");
+                const dataUpload = await reqUpload.json();
+
+                const reqPlaylist = await fetch('https://radio.askipradiotv.com/api/station/1/files/batch', {
+                    method: 'PUT',
+                    headers: {
+                        'X-API-Key': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "do": "playlist",
+                        "playlists": [playlistId],
+                        "files": [dataUpload.path]
+                    })
+                });
+
+                if (!reqPlaylist.ok) throw new Error("Échec de l'ajout à la playlist");
+                alert(`✅ Succès : Le son de ${artiste} a été ajouté à la playlist sur AzuraCast !`);
+            } catch (err) {
+                alert("Erreur : " + err.message);
+            }
         }
     </script>
 </body>
