@@ -154,44 +154,55 @@
             }
         }
 
+
         async function envoyerAzuracast(artiste, titre, audioUrl) {
-            const apiKey = 'e74b011e8a5aae41:0e255bf4df0cb643eed429b421dbf1ad';
+            const apiKey = 'e74b011e8a5aae41:0e255bf4df0cb643eed429b421dbf1ad'; // Mets ta vraie clé ici
             const playlistId = 25;
 
             alert(`Envoi en cours pour ${artiste}... Patiente un instant.`);
 
             try {
+                // 1. Téléchargement depuis Supabase
                 const response = await fetch(audioUrl);
                 const blob = await response.blob();
                 const nomPropre = `${artiste.replace(/[^a-z0-9]/gi, '_')}_-${titre.replace(/[^a-z0-9]/gi, '_')}.mp3`;
-                const file = new File([blob], nomPropre, { type: 'audio/mpeg' });
-                const formData = new FormData();
-                formData.append('file', file);
 
-                const reqUpload = await fetch('https://radio.askipradiotv.com/api/station/1/files', {
-                    method: 'POST',
-                    headers: { 'X-API-Key': apiKey },
-                    body: formData
+                // 2. Transformation du fichier en texte (Base64) pour AzuraCast
+                const base64String = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onload = () => resolve(reader.result.split(',')[1]); // Garde que le code audio
+                    reader.onerror = error => reject(error);
                 });
 
-                if (!reqUpload.ok) throw new Error("Échec de l'upload vers AzuraCast");
-                const dataUpload = await reqUpload.json();
+                // 3. Envoi vers AzuraCast (Format JSON)
+                const reqUpload = await fetch(`https://radio.askipradiotv.com/api/station/1/files?api_key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        path: nomPropre,
+                        file: base64String
+                    })
+                });
+                
+                if (!reqUpload.ok) {
+                    const detail = await reqUpload.text();
+                    throw new Error("Refus AzuraCast : " + detail);
+                }
 
-                const reqPlaylist = await fetch('https://radio.askipradiotv.com/api/station/1/files/batch', {
+                // 4. Ajout à la playlist
+                const reqPlaylist = await fetch(`https://radio.askipradiotv.com/api/station/1/files/batch?api_key=${apiKey}`, {
                     method: 'PUT',
-                    headers: {
-                        'X-API-Key': apiKey,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         "do": "playlist",
                         "playlists": [playlistId],
-                        "files": [dataUpload.path]
+                        "files": [nomPropre] // On utilise le nom direct
                     })
                 });
 
                 if (!reqPlaylist.ok) throw new Error("Échec de l'ajout à la playlist");
-                alert(`✅ Succès : Le son de ${artiste} a été ajouté à la playlist sur AzuraCast !`);
+                alert(`✅ Succès : Le son de ${artiste} a été ajouté à AzuraCast !`);
             } catch (err) {
                 alert("Erreur : " + err.message);
             }
